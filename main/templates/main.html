@@ -1,11 +1,5 @@
 <h1>Sofita Shop</h1>
 
-
-<h4>Product Name: {{ product }}</h4>
-<h4>Product Price: {{ price }}</h4>
-<h4>Category: {{ category }}</h4>
-<h4>Description: {{ description }}</h4>
-<p>-------------------------------------------</p>
 <p>Name: {{ name }}</p>
 <p>Class: {{ class }}</p>
 <p>NPM: {{ npm }}</p>
@@ -17,12 +11,12 @@
 <hr>
 
 {% if not product_list %}
-<p>Belum ada data berita pada football news.</p>
+<p>Belum ada produk di Sofita Shop.</p>
 {% else %}
 
 {% for product in product_list %}
 <div>
-  <h2><a href="{% url 'main:show_product' news.id %}">{{ product.title }}</a></h2>
+  <h2><a href="{% url 'main:show_product' product.id %}">{{ product.name }}</a></h2>
 
   <p><b>{{ product.get_category_display }}</b>{% if product.is_featured %} | 
     <b>Featured</b>{% endif %}{% if product.is_product_hot %} | 
