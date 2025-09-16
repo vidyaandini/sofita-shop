@@ -28,7 +28,7 @@ def create_product(request):
         return redirect('main:show_main')
 
     context = {'form': form}
-    return render(request, "create_news.html", context)
+    return render(request, "create_product.html", context)
 
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
@@ -38,12 +38,12 @@ def show_product(request, id):
         'product': product
     }
 
-    return render(request, "news_detail.html", context)
+    return render(request, "product_detail.html", context)
 
 def show_xml(request):
-    news_list = Product.objects.all()
+    product_list = Product.objects.all()
 
 def show_xml(request):
-     news_list = Product.objects.all()
+     product_list = Product.objects.all()
      xml_data = serializers.serialize("xml", news_list)
      return HttpResponse(xml_data, content_type="application/xml")
