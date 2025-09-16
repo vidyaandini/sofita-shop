@@ -46,3 +46,9 @@ Kedua, saya menambahkan fungsi XML, JSON, XML_by_id, JSON_by_id pada views.py. S
 
 6. Apakah ada feedback untuk asdos di tutorial 2 yang sudah kalian kerjakan?
 Tidak ada karena sudah sangat bagus.
+
+Lampiran screenshots
+<img width="1920" height="1080" alt="Screenshot (1516)" src="https://github.com/user-attachments/assets/1c2bad7b-e424-46c3-9323-1f59eca6d5fb" />
+<img width="1920" height="1080" alt="Screenshot (1515)" src="https://github.com/user-attachments/assets/44be79d7-f045-46b4-a1e3-7404470831bd" />
+<img width="1920" height="1080" alt="Screenshot (1514)" src="https://github.com/user-attachments/assets/03db8b7b-173b-45f5-9ca7-d70d6c6f3260" />
+<img width="1920" height="1080" alt="Screenshot (1513)" src="https://github.com/user-attachments/assets/f7aef513-24ab-4039-baa8-4b22ccaa9126" />
