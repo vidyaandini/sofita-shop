@@ -34,9 +34,9 @@
   <br />
   {% endif %}
 
-  <p>{{ news.content|truncatewords:25 }}...</p>
+  <p>{{ product.content|truncatewords:25 }}...</p>
 
-  <p><a href="{% url 'main:show_product' news.id %}"><button>Read More</button></a></p>
+  <p><a href="{% url 'main:show_product' product.id %}"><button>Read More</button></a></p>
 </div>
 
 <hr>

@@ -30,9 +30,9 @@ class Product(models.Model):
         return self.title
     
     @property
-    def is_news_hot(self):
-        return self.news_views > 20
+    def is_product_hot(self):
+        return self.product_views > 20
         
     def increment_views(self):
-        self.news_views += 1
+        self.product_views += 1
         self.save()
