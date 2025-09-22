@@ -52,3 +52,16 @@ Lampiran screenshots
 <img width="1920" height="1080" alt="Screenshot (1515)" src="https://github.com/user-attachments/assets/44be79d7-f045-46b4-a1e3-7404470831bd" />
 <img width="1920" height="1080" alt="Screenshot (1514)" src="https://github.com/user-attachments/assets/03db8b7b-173b-45f5-9ca7-d70d6c6f3260" />
 <img width="1920" height="1080" alt="Screenshot (1513)" src="https://github.com/user-attachments/assets/f7aef513-24ab-4039-baa8-4b22ccaa9126" />
+
+------------------------------------------------------------------------------------------------------------------------------
+TUGAS 4
+
+1. Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
+
+2. Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+
+3. Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+
+4. Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
