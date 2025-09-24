@@ -24,7 +24,7 @@ Django cocok untuk pemula karena django memiliki fitur bawaan yang lengkap sehin
 5. Apakah ada feedback untuk asisten dosen tutorial 1 yang telah kamu kerjakan sebelumnya?
 Feedback dari saya semoga di tutorial berikutnya asisten dosen lebih peka untuk memaparkan informasi yang sekiranya banyak ditanyakan oleh mahasiswa, saya berharap asisten dosen juga dapat lebih aktif menawarkan bantuan kepada mahasiswa di tutorial-tutorial berikutnya.
 
-----------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 TUGAS 3
 
 1. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
@@ -57,11 +57,17 @@ Lampiran screenshots
 TUGAS 4
 
 1. Apa itu Django AuthenticationForm? Jelaskan juga kelebihan dan kekurangannya.
+Django AuthenticationForm merupakan fitur bawaan django yang didesain untuk login user. AuthenticationForm ini mempermudah proses pembuatan form dengan menyediakan field username dan password serta melakukan validasi sehingga user tidak perlu lagi untuk membuat field username, password, dan validasi dari awal. Kelebihan dari fitur AuthenticationForm ini adalah mempermudah proses web developing supaya waktu pembuatannya lebih cepat karena tidak perlu membuat form secara manual dari 0, dan sudah ada fitur validasi sehingga tidak perlu membuat validasi manual karena django sudah auto validasi input user serta passwordnya. Kekurangan dari django AuthenticationForm ini yaitu kurang fleksibel untuk kebutuhan custom seperti login dengan email atau HP karena fiturnya hanya menyediakan fitur login dengan username dan password, selain itu desain fiturnya juga masih sangat sederhana, dan agak sulit dimodifikasi jika dibandingkan dengan form yang dibuat manual dari awal. 
 
 2. Apa perbedaan antara autentikasi dan otorisasi? Bagaiamana Django mengimplementasikan kedua konsep tersebut?
+Autentikasi adalah proses verifikasi identitas (username, password, email, token, dan lain-lain) dengan tujuan untuk memastikan siapa user yang sedang login. Otorisasi adalah proses pemeriksaan hak akses dari user untuk memastikan batasan user untuk melakukan sesuatu, artinya user bisa ditolak ataupun diterima tergantung dari proses otorisasi. Django mengimplementasikan kedua konsep tersebut dalam django.contrib.auth.
 
 3. Apa saja kelebihan dan kekurangan session dan cookies dalam konteks menyimpan state di aplikasi web?
+Session memiliki beberapa kelebihan yaitu lebih aman untuk digunakan karena bisa menyimpan data yang sifatnya sensitif ke dalam server, kapasitas data yang bisa disimpan juga lebih besar jika dibandingkan drngan cookies, serta bisa menyimpan memori seperti aktivitas pengguna dalam suatu server, namun session juga memiliki beberapa kekurangan yaitu server bisa berat karena semua session harus disimpan dan session juga sangat bergantung pada session ID sehingga kalau session sudah expired maka state hilang. Cookies memiliki beberapa kelebihan yaitu mudah untuk digunakan karena tidak ada konfigurasi server yang rumit, ringan bagi server karena tidak perlu menyimpan semua data session, dan fleksibel digunakan untuk menyimpan data yang tidak sensitif, namun kekurangannya adalah risiko keamanan ketika kita sebagai pengguna memasukkan data sensitif karena datanya bisa tersimpan dalam cookies dan dibaca oleh peretas, selain itu ukuran data yang disimpan juga terbatas yaitu 4 KB sehingga tidak cocok untuk menyimpan data dengan ukuran besar.
 
 4. Apakah penggunaan cookies aman secara default dalam pengembangan web, atau apakah ada risiko potensial yang harus diwaspadai? Bagaimana Django menangani hal tersebut?
+Penggunaan cookies secara default dalam pengembangan web tidak sepenuhnya aman karena apabila menyimpan data terutama untuk data yang sensitif karena datanya bisa diliat oleh peretas dan bisa disalahgunakan karena disimpannya bukan di server lokal.
 
 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
+Pertama saya mengimplementasikan fungsi registrasi, login, dan logout dengan mengimport django.contrib.auth.forms untuk import UserCreationForm dan import django.contrib untuk import messages, lalu saya buat fungsi register dengan POST, saya juga buat berkas HTML khusus untuk register yang bernama register.html di main/templates dan saya tambahkan path url di urlpatterns untuk mengakses fungsi yang sudah diimport, step-step pada register tadi juga saya terapkan untuk fitur login dan logout.
+Selanjutnya saya membuat 2 akun dengan masing-masing saya isi dengan 3 produk berbeda. Lalu saya hubungkan user dengan product di models.py, lalu saya set cookies di views.py di login_user jadi setiap login akan ter-update waktunya.
