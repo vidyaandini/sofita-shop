@@ -71,3 +71,28 @@ Penggunaan cookies secara default dalam pengembangan web tidak sepenuhnya aman k
 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial).
 Pertama saya mengimplementasikan fungsi registrasi, login, dan logout dengan mengimport django.contrib.auth.forms untuk import UserCreationForm dan import django.contrib untuk import messages, lalu saya buat fungsi register dengan POST, saya juga buat berkas HTML khusus untuk register yang bernama register.html di main/templates dan saya tambahkan path url di urlpatterns untuk mengakses fungsi yang sudah diimport, step-step pada register tadi juga saya terapkan untuk fitur login dan logout.
 Selanjutnya saya membuat 2 akun dengan masing-masing saya isi dengan 3 produk berbeda. Lalu saya hubungkan user dengan product di models.py, lalu saya set cookies di views.py di login_user jadi setiap login akan ter-update waktunya.
+
+------------------------------------------------------------------------------------------------------------------------------
+
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
+Urutan prioritas pengambilan CSS selector ditentukan oleh Spesifisitas dan urutan penulisan (The Cascade). Pertama atau yang prioritasnya paling tinggi yaitu Inline Style, inline style merupakan gaya yang ditulis langsung di atribut style pada elemen HTML. Kedua yaitu ID Selector (#ID), selector ini sangat spesifik karena setiap ID pada halaman harus unik. Ketiga yaitu selector .class, pseudo-class (:hover), dan attribute selector ([type=“text”]) yang memiliki spesifisitas yang setara. Keempat yaitu type (element) selector (div) dan pseudo-element selector (::before) dimana selector yang memilih elemen HTML atau bagian spesifik dari elemen tersebut. Kelima yaitu universal selector (*), universal selector adalah selector paling tidak spesifik yang menargetkan semua elemen.
+
+2. Mengapa responsive design menjadi konsep yang penting dalam pengembangan aplikasi web? Berikan contoh aplikasi yang sudah dan belum menerapkan responsive design, serta jelaskan mengapa!
+Responsive design menjadi konsep yang penting dalam pengembangan aplikasi web karena pengguna tidak hanya menggunakan aplikasi web dalam satu perangkat tertentu, tapi bisa dari berbagai perangkat sehingga responsive design bisa menyesuaikan layout sesuai dengan perangkat yang digunakan dan nyaman dilihat oleh pengguna. Aplikasi yang sudah menerapkan responsive design adalah website DPR RI, untuk aplikasi yang belum menerapkan responsive design yaitu aplikasi web atau portal sekolah yang sudah lama karena tampilannya di desktop dan di hp layoutnya hampir sama dan kalau di hp itu tulisannya sangat kecil, sementara web yang sudah menerapkan responsive design akan menyesuaikan layout dengan perangkat yang digunakan oleh pengguna.
+
+3. Jelaskan perbedaan antara margin, border, dan padding, serta cara untuk mengimplementasikan ketiga hal tersebut!
+Margin adalah ruang di luar border elemen, memisahkan elemen dengan elemen lain di sekitarnya, biasanya transparan atau tidak memiliki warna. Selanjutnya yaitu border yaitu garis yang membungkus elemen (antara margin dan padding),
+border bisa diatur ketebalan, warna, dan jenis garis (solid, dashed, dotted). Terakhir padding yaitu ruang di dalam border elemen, memberi jarak antara konten (teks/gambar) dan border.
+Contoh penggunaan:
+.box {
+  margin: 20px;                 
+  border: 3px dashed blue;     
+  padding: 15px;               
+  background-color: lightyellow;
+}
+
+4. Jelaskan konsep flex box dan grid layout beserta kegunaannya!
+Flexbox adalah sistem tata letak 1 dimensi (satu arah: baris atau kolom), elemen di dalam container (display: flex;) akan otomatis menyesuaikan ukuran ruang, bisa rata kanan, kiri, tengah, atau menyebar merata, fungsinya untuk membuat align elemen secara horizontal/vertikal lebih mudah. Grid layout adalah sistem tata letak 2 dimensi (baris dan kolom sekaligus), gunanya adalah untuk memberi kontrol presisi pada posisi elemen (misalnya elemen bisa spanning 2 kolom).
+
+5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
+Pertama saya menambahkan framewotk CSS Tailwind, lalu saya menambahkan fitur edit dan delete pada website saya, lalu saya menambahkan fitur navbar.html untuk navigasi dari setiap fitur yang ada di website saya, lalu saya juga membuat global.css untuk frameworknya, lalu saya buat card_product.html untuk cardnya. Saya juga memodifikasi website saya dengan menambahkan beberapa spesifikasi dalam card_product.html agar ada fitur zoom ketika kursor mengarah ke produk dan juga saya menambahkan fitur harga dan mewarnai website saya dengan warna pink magenta.
