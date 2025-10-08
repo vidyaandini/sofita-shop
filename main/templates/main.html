@@ -10,48 +10,161 @@
 <div class="bg-gray-50 w-full pt-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- Header Section -->
+    <!-- Header -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Sofita Shop</h1>
-      <p class="text-gray-600">Stay updated with the latest product</p>
+      <p class="text-gray-600">Stay updated with the latest products 💅</p>
     </div>
 
-    <!-- Filter Section -->
+    <!-- Tombol Create AJAX -->
+    <button onclick="showModal()" 
+      class="inline-flex items-center px-4 py-2 bg-white text-[#ba1666] font-semibold outline outline-2 outline-[#ba1666] rounded-md hover:bg-[#ba1666] hover:text-white transition-colors mb-4">
+      + Create Product (AJAX)
+    </button>
+
+    <!-- Filter -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-gray-200 p-4">
       <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-[#ba1666] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#7d0e43] hover:text-white">
+        <a href="?" id="filter-all" 
+           class="bg-[#ba1666] text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#7d0e43]">
           All Product
         </a>
-        <a href="?filter=my" class="{% if request.GET.filter == 'my' %} bg-[#ba1666] text-white{% else %}bg-white text-gray-700 border border-gray-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#7d0e43] hover:text-white">
+        <a href="?filter=my" id="filter-my" 
+           class="bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#ba1666] hover:text-white">
           My Product
         </a>
       </div>
       {% if user.is_authenticated %}
-        <div class="text-sm text-gray-500">
-          Last login: {{ last_login }}
-        </div>
+      <div class="text-sm text-gray-500">
+        Last login: {{ last_login }}
+      </div>
       {% endif %}
     </div>
 
-    <!-- Product Grid -->
-    {% if not product_list %}
-      <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
-        <div class="w-32 h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-image.png' %}" alt="No product available" class="w-full h-full object-contain">
-        </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
-        <p class="text-gray-500 mb-6">Be the first to buy our product.</p>
-        <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 bg-[#ba1666] text-white rounded-md hover:bg-[#7d0e43] transition-colors">
-          Create Product
-        </a>
+    <!-- Loading -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-[#ba1666] inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading product...</p>
+    </div>
+
+    <!-- Grid -->
+    <div id="product-container" class="hidden"></div>
+
+    <!-- Empty -->
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="w-32 h-32 mx-auto mb-4">
+        <img src="{% static 'image/no-product.png' %}" alt="No product available" class="w-full h-full object-contain">
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in product_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No product found</h3>
+      <p class="text-gray-500 mb-6">Be the first to share your shopping experience at Sofita Shop 💕</p>
+      <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 bg-[#ba1666] text-white rounded-md hover:bg-[#7d0e43] transition-colors">
+        Create Product
+      </a>
+    </div>
   </div>
 </div>
+
+<!-- ✅ Script CRUD AJAX -->
+<script>
+const PRODUCT_API_ENDPOINT = "{% url 'main:show_json' %}";
+const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+const loadingEl = document.getElementById('loading');
+const emptyEl = document.getElementById('empty');
+const gridEl = document.getElementById('product-container');
+
+let allProducts = [];
+
+// ✅ Helper tampilkan bagian
+function showSection({ loading=false, empty=false, grid=false }) {
+  loadingEl.classList.toggle('hidden', !loading);
+  emptyEl.classList.toggle('hidden', !empty);
+  gridEl.classList.toggle('hidden', !grid);
+  if (grid) gridEl.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+}
+
+// ✅ Bangun card produk
+function buildProductCard(item) {
+  const isOwner = CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(item.user_id);
+  const img = item.thumbnail || 'https://via.placeholder.com/400x300?text=No+Image';
+  const price = item.price ? `Rp${Number(item.price).toLocaleString('id-ID')}` : '-';
+  const editUrl = `{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
+
+  const card = document.createElement('article');
+  card.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full';
+  card.innerHTML = `
+    <div class="aspect-[16/9] overflow-hidden">
+      <img src="${img}" alt="${item.name}" class="w-full h-full object-cover">
+    </div>
+    <div class="p-5 flex flex-col flex-1">
+      <h3 class="text-lg font-semibold text-gray-900 mb-1">${item.name}</h3>
+      <p class="text-gray-600 text-sm line-clamp-3 mb-3">${item.description}</p>
+      <p class="text-[#ba1666] font-bold mb-4">${price}</p>
+      <div class="flex justify-between text-sm text-gray-500">
+        <span>${item.category || '-'}</span>
+        ${isOwner ? `
+          <div class="flex space-x-3">
+            <a href="${editUrl}" class="text-gray-600 hover:text-[#ba1666]">Edit</a>
+            <button onclick="deleteProduct('${item.id}')" class="text-red-600 hover:text-red-700">Delete</button>
+          </div>` : ''}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+// ✅ Render semua produk
+function renderProducts(data) {
+  gridEl.innerHTML = '';
+  data.forEach(p => gridEl.appendChild(buildProductCard(p)));
+}
+
+// ✅ Fetch produk
+async function fetchProducts() {
+  showSection({ loading: true });
+  try {
+    const res = await fetch(PRODUCT_API_ENDPOINT);
+    const data = await res.json();
+    allProducts = data;
+
+    if (data.length === 0) showSection({ empty: true });
+    else {
+      renderProducts(data);
+      showSection({ grid: true });
+    }
+  } catch (err) {
+    console.error(err);
+    showSection({ empty: true });
+  }
+}
+
+// ✅ Delete produk via AJAX
+async function deleteProduct(id) {
+  if (!confirm('Yakin mau hapus produk ini?')) return;
+  try {
+    const res = await fetch(`/delete-product-ajax/${id}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN },
+    });
+    const result = await res.json();
+    if (result.status === 'success') {
+      allProducts = allProducts.filter(p => p.id !== id);
+      renderProducts(allProducts);
+      if (allProducts.length === 0) showSection({ empty: true });
+    } else {
+      alert(result.message || 'Gagal menghapus produk 😢');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan saat menghapus produk.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', fetchProducts);
+</script>
+
 {% endblock content %}

@@ -73,6 +73,7 @@ Pertama saya mengimplementasikan fungsi registrasi, login, dan logout dengan men
 Selanjutnya saya membuat 2 akun dengan masing-masing saya isi dengan 3 produk berbeda. Lalu saya hubungkan user dengan product di models.py, lalu saya set cookies di views.py di login_user jadi setiap login akan ter-update waktunya.
 
 ------------------------------------------------------------------------------------------------------------------------------
+TUGAS 5
 
 1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, jelaskan urutan prioritas pengambilan CSS selector tersebut!
 Urutan prioritas pengambilan CSS selector ditentukan oleh Spesifisitas dan urutan penulisan (The Cascade). Pertama atau yang prioritasnya paling tinggi yaitu Inline Style, inline style merupakan gaya yang ditulis langsung di atribut style pada elemen HTML. Kedua yaitu ID Selector (#ID), selector ini sangat spesifik karena setiap ID pada halaman harus unik. Ketiga yaitu selector .class, pseudo-class (:hover), dan attribute selector ([type=“text”]) yang memiliki spesifisitas yang setara. Keempat yaitu type (element) selector (div) dan pseudo-element selector (::before) dimana selector yang memilih elemen HTML atau bagian spesifik dari elemen tersebut. Kelima yaitu universal selector (*), universal selector adalah selector paling tidak spesifik yang menargetkan semua elemen.
@@ -96,3 +97,21 @@ Flexbox adalah sistem tata letak 1 dimensi (satu arah: baris atau kolom), elemen
 
 5. Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
 Pertama saya menambahkan framewotk CSS Tailwind, lalu saya menambahkan fitur edit dan delete pada website saya, lalu saya menambahkan fitur navbar.html untuk navigasi dari setiap fitur yang ada di website saya, lalu saya juga membuat global.css untuk frameworknya, lalu saya buat card_product.html untuk cardnya. Saya juga memodifikasi website saya dengan menambahkan beberapa spesifikasi dalam card_product.html agar ada fitur zoom ketika kursor mengarah ke produk dan juga saya menambahkan fitur harga dan mewarnai website saya dengan warna pink magenta.
+
+------------------------------------------------------------------------------------------------------------------------------
+TUGAS 6
+
+1. Apa perbedaan antara synchronous request dan asynchronous request?
+   Synchronous request memaksa browser menunggu hingga server selesai memproses dan mengirimkan respon, sehingga halaman akan “berhenti” sementara. Sedangkan asynchronous request memungkinkan browser mengirim permintaan ke server tanpa menghentikan interaksi pengguna, sehingga halaman tetap responsif.
+
+2. Bagaimana AJAX bekerja di Django (alur request–response)?
+   Ketika pengguna melakukan aksi (misalnya klik tombol), JavaScript mengirimkan request ke server Django secara asynchronous melalui XMLHttpRequest atau fetch. Django kemudian memproses request di views dan mengembalikan data (biasanya dalam format JSON). JavaScript menerima respon tersebut dan memperbarui tampilan halaman secara dinamis tanpa perlu reload penuh.
+
+3. Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+   AJAX membuat halaman web lebih cepat dan interaktif karena hanya bagian tertentu dari halaman yang diperbarui, bukan seluruh halaman. Hal ini mengurangi waktu loading dan membuat aplikasi terasa lebih responsif.
+
+4. Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+   Untuk menjaga keamanan, AJAX harus dikombinasikan dengan mekanisme seperti CSRF token, validasi input di server, penggunaan HTTPS, dan pengelolaan sesi dengan benar. Ini mencegah serangan seperti CSRF dan data dicuri saat pengiriman.
+
+5. Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+   AJAX meningkatkan pengalaman pengguna karena membuat interaksi lebih cepat, lancar, dan tidak mengganggu alur pengguna dengan reload halaman penuh. Hal ini memberikan kesan aplikasi yang modern dan responsif.
