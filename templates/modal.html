@@ -20,17 +20,25 @@
     <div class="px-6 py-4 space-y-6 form-style">
       <form id="productForm">
         <div class="mb-4">
-          <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-          <input type="text" id="title" name="title" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product title" required>
+          <label for="name" class="block text-sm font-medium text-gray-700">Nama Produk</label>
+          <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Masukkan nama produk" required>
         </div>
         <div class="mb-4">
-          <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-          <textarea id="content" name="content" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Enter product content" required></textarea>
+          <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi Produk</label>
+          <textarea id="description" name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Tulis deskripsi produkmu..." required></textarea>
         </div>
         <div class="mb-4">
-          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+          <label for="thumbnail" class="block text-sm font-medium text-gray-700">URL Gambar Produk</label>
+          <input type="url" id="thumbnail" name="thumbnail" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="https://contoh.com/gambar-produk.jpg">
+        </div>
+        <div class="mb-4">
+          <label for="price" class="block text-sm font-medium text-gray-700">Harga Produk (Rp)</label>
+          <input type="number" id="price" name="price" min="0" step="1000" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Contoh: 150000" required>
+        </div>
+        <div class="mb-4">
+          <label for="category" class="block text-sm font-medium text-gray-700">Kategori Produk</label>
           <select id="category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required>
-            <option value="">Choose a category</option>
+            <option value="">Pilih kategori</option>
             <option value="transfer">Transfer</option>
             <option value="update">Update</option>
             <option value="exclusive">Exclusive</option>
@@ -38,10 +46,6 @@
             <option value="rumor">Rumor</option>
             <option value="analysis">Analysis</option>
           </select>
-        </div>
-        <div class="mb-4">
-          <label for="thumbnail" class="block text-sm font-medium text-gray-700">Thumbnail URL</label>
-          <input type="url" id="thumbnail" name="thumbnail" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" placeholder="https://example.com/image.jpg">
         </div>
         <div class="mb-4">
           <div class="flex items-center">
@@ -91,9 +95,11 @@
 
     document.getElementById("productForm").reset();
     hideModal();
-      
-    // Show toast notification
-    showToast('Product added successfully!', '', 'success');
+
+    // Show inline notification
+    if (typeof showNotification !== 'undefined') {
+      showNotification('Product added successfully!', 'success');
+    }
 
     // Dispatch custom event to notify main.html about new data
     document.dispatchEvent(new CustomEvent('productAdded'));

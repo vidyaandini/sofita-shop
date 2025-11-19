@@ -8,7 +8,6 @@
 <div class="bg-gray-50 w-full min-h-screen">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Back Navigation -->
     <div class="mb-6">
       <a href="{% url 'main:show_main' %}" 
          class="text-gray-600 hover:text-gray-900 font-medium transition-colors">
@@ -16,7 +15,6 @@
       </a>
     </div>
     
-    <!-- Form -->
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-sm">
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Create New Product</h1>
@@ -26,57 +24,50 @@
       <form method="POST" id="create-product-form" class="space-y-6">
         {% csrf_token %}
 
-        <!-- Nama Produk -->
         <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Nama Produk
           </label>
-          <input type="text" name="name" id="name"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="Masukkan nama produk" required>
+          {{ form.name }}
         </div>
 
-        <!-- Deskripsi Produk -->
         <div>
-          <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Deskripsi Produk
           </label>
-          <textarea name="content" id="content" rows="5"
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                    placeholder="Tulis deskripsi produkmu..." required></textarea>
+          {{ form.description }}
         </div>
 
-        <!-- Thumbnail URL -->
         <div>
-          <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             URL Gambar Produk
           </label>
-          <input type="url" name="thumbnail" id="thumbnail"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="https://contoh.com/gambar-produk.jpg">
+          {{ form.thumbnail }}
         </div>
 
-        <!-- Harga Produk -->
         <div>
-          <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Harga Produk (Rp)
           </label>
-          <input type="number" name="price" id="price" min="0" step="1000"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="Contoh: 150000" required>
+          {{ form.price }}
         </div>
 
-        <!-- Kategori (jika ada) -->
-        {% if form.category %}
         <div>
-          <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Kategori Produk
           </label>
           {{ form.category }}
         </div>
-        {% endif %}
 
-        <!-- Tombol -->
+        <div>
+          <div class="flex items-center">
+            {{ form.is_featured }}
+            <label for="{{ form.is_featured.id_for_label }}" class="ml-2 text-sm font-medium text-gray-900">
+              Featured Product
+            </label>
+          </div>
+        </div>
+
         <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
           <a href="{% url 'main:show_main' %}" 
              class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center">
@@ -107,16 +98,34 @@ document.getElementById("create-product-form").addEventListener("submit", async 
       body: formData,
     });
 
-    if (!response.ok) throw new Error("Gagal menambahkan produk!");
-
-    const result = await response.json();
+    // 1. Cek Status Respon. Jika bukan 2xx (misal 400, 500), lemparkan error
+    if (!response.ok) {
+        throw new Error("Gagal menambahkan produk! Status server: " + response.status);
+    }
+    
+    // 2. Cek tipe konten dan panjang respons sebelum mencoba response.json()
+    //    Ini untuk mencegah crash saat server mengirim respons sukses (201) tapi kosong.
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType && contentType.includes("application/json")) {
+        // Jika server mengembalikan JSON yang valid
+        const result = await response.json();
+        console.log("Response JSON dari server:", result);
+    } else {
+        // Jika server mengembalikan respons sukses (201) tapi bukan/minimal JSON (kasus Anda)
+        console.log("Produk berhasil dibuat, respons server minimal (7 bytes).");
+    }
+    
+    // 3. Jika berhasil sampai di sini, artinya produk SANGAT MUNGKIN sudah tersimpan.
     alert("Produk berhasil ditambahkan! 🎉");
 
     // Optional: balik ke halaman utama
     window.location.href = "{% url 'main:show_main' %}";
+    
   } catch (error) {
-    console.error(error);
-    alert("Terjadi kesalahan saat menambahkan produk 😭");
+    // Jika terjadi error di network, di response.ok, atau di response.json()
+    console.error("Error Detail (Lihat log konsol browser untuk detail):", error);
+    alert("Terjadi kesalahan saat menambahkan produk 😭. Cek konsol browser.");
   }
 });
 </script>

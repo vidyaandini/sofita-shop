@@ -16,8 +16,11 @@
       <p class="text-gray-600">Stay updated with the latest products 💅</p>
     </div>
 
+    <!-- Notification Area -->
+    <div id="notification" class="hidden mb-4 p-4 rounded-md text-center font-medium"></div>
+
     <!-- Tombol Create AJAX -->
-    <button onclick="showModal()" 
+    <button onclick="showModal()"
       class="inline-flex items-center px-4 py-2 bg-white text-[#ba1666] font-semibold outline outline-2 outline-[#ba1666] rounded-md hover:bg-[#ba1666] hover:text-white transition-colors mb-4">
       + Create Product (AJAX)
     </button>
@@ -67,6 +70,22 @@
   </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Konfirmasi Hapus</h3>
+    <p class="text-gray-600 mb-6">Apakah Anda yakin ingin menghapus produk ini?</p>
+    <div class="flex justify-end space-x-3">
+      <button id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors">
+        Batal
+      </button>
+      <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+        Hapus
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ✅ Script CRUD AJAX -->
 <script>
 const PRODUCT_API_ENDPOINT = "{% url 'main:show_json' %}";
@@ -76,6 +95,15 @@ const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 const loadingEl = document.getElementById('loading');
 const emptyEl = document.getElementById('empty');
 const gridEl = document.getElementById('product-container');
+const notificationEl = document.getElementById('notification');
+const deleteModal = document.getElementById('deleteModal');
+const cancelDeleteBtn = document.getElementById('cancelDelete');
+const confirmDeleteBtn = document.getElementById('confirmDelete');
+const filterAllBtn = document.getElementById('filter-all');
+const filterMyBtn = document.getElementById('filter-my');
+
+let productToDelete = null;
+let currentFilter = 'all';
 
 let allProducts = [];
 
@@ -85,6 +113,48 @@ function showSection({ loading=false, empty=false, grid=false }) {
   emptyEl.classList.toggle('hidden', !empty);
   gridEl.classList.toggle('hidden', !grid);
   if (grid) gridEl.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+}
+
+// ✅ Show notification
+function showNotification(message, type = 'success') {
+  notificationEl.textContent = message;
+  notificationEl.className = `mb-4 p-4 rounded-md text-center font-medium ${type === 'success' ? 'bg-pink-100 text-pink-800' : 'bg-red-100 text-red-800'}`;
+  notificationEl.classList.remove('hidden');
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notificationEl.classList.add('hidden');
+  }, 3000);
+}
+
+// ✅ Update filter button styles
+function updateFilterButtons() {
+  if (currentFilter === 'all') {
+    filterAllBtn.className = 'bg-[#ba1666] text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#7d0e43]';
+    filterMyBtn.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#ba1666] hover:text-white';
+  } else {
+    filterAllBtn.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#ba1666] hover:text-white';
+    filterMyBtn.className = 'bg-[#ba1666] text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#7d0e43]';
+  }
+}
+
+// ✅ Handle filter change
+function setFilter(filter) {
+  currentFilter = filter;
+  updateFilterButtons();
+  fetchProducts();
+}
+
+// ✅ Show delete modal
+function showDeleteModal(productId) {
+  productToDelete = productId;
+  deleteModal.classList.remove('hidden');
+}
+
+// ✅ Hide delete modal
+function hideDeleteModal() {
+  deleteModal.classList.add('hidden');
+  productToDelete = null;
 }
 
 // ✅ Bangun card produk
@@ -127,44 +197,111 @@ function renderProducts(data) {
 async function fetchProducts() {
   showSection({ loading: true });
   try {
-    const res = await fetch(PRODUCT_API_ENDPOINT);
+    // Tentukan URL berdasarkan filter
+    const url = currentFilter === 'all' ? PRODUCT_ALL_ENDPOINT : PRODUCT_MY_ENDPOINT; // <-- LOGIKA BARU DI SINI
+
+    // Tambahkan timeout untuk mencegah hang
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const res = await fetch(url, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
     const data = await res.json();
     allProducts = data;
 
-    if (data.length === 0) showSection({ empty: true });
-    else {
+    if (data.length === 0) {
+      showSection({ empty: true });
+    } else {
       renderProducts(data);
       showSection({ grid: true });
     }
   } catch (err) {
-    console.error(err);
+    console.error('Fetch error:', err);
+    // Tampilkan pesan error jika bukan karena Abort (Timeout)
+    if (err.name !== 'AbortError') {
+       showNotification('Gagal memuat produk. Cek koneksi server atau URL endpoint.', 'error');
+    }
     showSection({ empty: true });
   }
 }
 
 // ✅ Delete produk via AJAX
 async function deleteProduct(id) {
-  if (!confirm('Yakin mau hapus produk ini?')) return;
+  showDeleteModal(id);
+}
+
+// ✅ Perform actual delete
+async function performDelete() {
+  if (!productToDelete) return;
+
+  const id = productToDelete;
+  hideDeleteModal();
+
   try {
     const res = await fetch(`/delete-product-ajax/${id}/`, {
       method: 'POST',
       headers: { 'X-CSRFToken': CSRF_TOKEN },
     });
     const result = await res.json();
-    if (result.status === 'success') {
+    if (result.message === 'Produk berhasil dihapus!') {
       allProducts = allProducts.filter(p => p.id !== id);
       renderProducts(allProducts);
       if (allProducts.length === 0) showSection({ empty: true });
+      showNotification('Product deleted successfully!', 'success');
     } else {
-      alert(result.message || 'Gagal menghapus produk 😢');
+      showNotification(result.error || 'Gagal menghapus produk', 'error');
     }
   } catch (err) {
     console.error(err);
-    alert('Terjadi kesalahan saat menghapus produk.');
+    showNotification('Terjadi kesalahan saat menghapus produk.', 'error');
   }
 }
 
-document.addEventListener('DOMContentLoaded', fetchProducts);
+document.addEventListener('DOMContentLoaded', function() {
+  // Get initial filter from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  currentFilter = urlParams.get('filter') || 'all';
+  updateFilterButtons();
+
+  fetchProducts();
+});
+
+// Filter button event listeners
+filterAllBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  setFilter('all');
+  // Update URL without reload
+  window.history.pushState({}, '', '?');
+});
+
+filterMyBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  setFilter('my');
+  // Update URL without reload
+  window.history.pushState({}, '', '?filter=my');
+});
+
+// Listen for product added event from modal
+document.addEventListener('productAdded', function() {
+  fetchProducts(); // Refresh the product list
+});
+
+// Delete modal event listeners
+cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+confirmDeleteBtn.addEventListener('click', performDelete);
+
+// Close modal when clicking outside
+deleteModal.addEventListener('click', function(e) {
+  if (e.target === deleteModal) {
+    hideDeleteModal();
+  }
+});
 </script>
 
 {% endblock content %}

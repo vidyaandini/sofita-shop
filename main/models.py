@@ -5,22 +5,24 @@ from django.contrib.auth.models import User
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
-        ('transfer', 'Transfer'),
-        ('update', 'Update'),
-        ('exclusive', 'Exclusive'),
-        ('match', 'Match'),
-        ('rumor', 'Rumor'),
-        ('analysis', 'Analysis'),
+        ('NEW ARRIVALS', 'NEW ARRIVALS'),
+        ('EXCLUSIVE', 'EXCLUSIVE'),
+        ('SALE', 'SALE'),
+        ('MAN', 'MAN'),
+        ('WOMAN', 'WOMAN'),
+        ('KIDS', 'KIDS'),
+        ('COMING SOON', 'COMING SOON'),
+        ('BRAND', 'BRAND'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='update')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='NEW ARRIVALS')
     thumbnail = models.URLField(blank=True, null=True)
     product_views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     is_featured = models.BooleanField(default=False)
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    price = models.IntegerField(default=0)
     description = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     

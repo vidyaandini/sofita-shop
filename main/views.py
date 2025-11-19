@@ -12,22 +12,28 @@ from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
+import requests
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.html import strip_tags
+from django.http import JsonResponse
+import json
 
 # Create your views here.
+# Hapus filter di show_main karena sudah di-handle oleh AJAX
 @login_required(login_url='/login')
 def show_main(request):
-    filter_type = request.GET.get("filter", "all")  # default 'all'
-
-    if filter_type == "all":
-        product_list = Product.objects.all()
-    else:
-        product_list = Product.objects.filter(user=request.user)
+    # filter_type = request.GET.get("filter", "all") # Dihapus
+    # if filter_type == "all":
+    product_list = Product.objects.all() # Cukup ambil semua, ini hanya untuk initial render
+    # else:
+    #     product_list = Product.objects.filter(user=request.user) # Dihapus
         
     context = {
         'npm' : '2406432513',
         'name': request.user.username ,
         'class': 'PBP D',
-        'product_list' : product_list,
+        # Biarkan product_list tetap ada untuk kompatibilitas, tapi AJAX yang akan mengambil data
+        'product_list' : product_list, 
         'last_login': request.COOKIES.get('last_login', 'Never'),
     }
 
@@ -73,7 +79,9 @@ def show_xml_by_id(request, product_id):
        return HttpResponse(status=404)
 
 def show_json(request):
-    product_list = Product.objects.all()
+    # Ambil SEMUA produk tanpa filter user
+    product_list = Product.objects.all().select_related('user')
+    
     data = [
         {
             'id': str(product.id),
@@ -86,10 +94,11 @@ def show_json(request):
             'created_at': product.created_at.isoformat() if product.created_at else None,
             'is_featured': product.is_featured,
             'user_id': product.user_id,
+            'user_username': product.user.username if product.user else 'Anonymous',
         }
         for product in product_list
     ]
-
+    
     return JsonResponse(data, safe=False)
 
 def show_json_by_id(request, product_id):
@@ -104,7 +113,7 @@ def show_json_by_id(request, product_id):
             'product_views': product.product_views,
             'created_at': product.created_at.isoformat() if product.created_at else None,
             'is_featured': product.is_featured,
-            'user_id': product.user,
+            'user_id': product.user_id,
             'user_username': product.user.username if product.user else None,
         }
         return JsonResponse(data)
@@ -198,3 +207,131 @@ def delete_product_ajax(request, id):
         return JsonResponse({"message": "Produk berhasil dihapus!"}, status=200)
     except:
         return JsonResponse({"error": "Gagal menghapus produk"}, status=400)
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url or image_url.strip() == '':
+        # Return a default SVG placeholder for empty URLs
+        svg_content = '''<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="300" fill="#f3f4f6"/>
+            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="16">No Image</text>
+        </svg>'''
+        return HttpResponse(svg_content, content_type='image/svg+xml')
+
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        # On error, return the default SVG placeholder
+        svg_content = '''<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="400" height="300" fill="#f3f4f6"/>
+            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="16">Image Error</text>
+        </svg>'''
+        return HttpResponse(svg_content, content_type='image/svg+xml')
+    
+@csrf_exempt
+def create_product_flutter(request):
+    if request.method == 'POST':
+        # Require authentication for Flutter app
+        if not request.user.is_authenticated:
+            return JsonResponse({"status": "error", "message": "Authentication required"}, status=401)
+
+        try:
+            data = json.loads(request.body)
+            name = strip_tags(data.get("name", "").strip())
+            description = strip_tags(data.get("description", "").strip())
+            category = data.get("category", "").strip()
+            thumbnail = data.get("thumbnail", "").strip()
+
+            # Handle price - ensure it's a valid decimal
+            price_str = str(data.get("price", "0")).strip()
+            try:
+                price = float(price_str) if price_str else 0.0
+            except (ValueError, TypeError):
+                price = 0.0
+
+            is_featured = bool(data.get("is_featured", False))
+
+            # Validate required fields
+            if not name:
+                return JsonResponse({"status": "error", "message": "Name is required"}, status=400)
+
+            if not description:
+                return JsonResponse({"status": "error", "message": "Description is required"}, status=400)
+
+            # Validate category choices - map Flutter categories to Django categories
+            category_mapping = {
+                'sepatu running': 'transfer',
+                'jersey': 'update',
+                'sepatu futsal': 'exclusive',
+                'topi': 'match',
+                'sepatu bola': 'rumor',
+                'celana training': 'analysis'
+            }
+            category = category_mapping.get(category, 'update')
+
+            user = request.user
+
+            new_product = Product(
+                name=name,
+                description=description,
+                category=category,
+                thumbnail=thumbnail,
+                price=price,
+                is_featured=is_featured,
+                user=user
+            )
+            new_product.save()
+
+            # Return response expected by Flutter app
+            response_data = {
+                "status": "success",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                }
+            }
+
+            return JsonResponse(response_data, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON data"}, status=400)
+        except Exception as e:
+            print(f"Error creating product: {e}")
+            return JsonResponse({"status": "error", "message": "Internal server error"}, status=500)
+    else:
+        return JsonResponse({"status": "error", "message": "Method not allowed"}, status=405)
+    
+def show_product_user(request):
+    # Return empty list if not authenticated
+    if not request.user.is_authenticated:
+        return JsonResponse([], safe=False, status=200)
+    
+    qs = Product.objects.filter(user=request.user).select_related("user")
+    
+    data = [
+        {
+            "id": str(p.id),
+            "name": p.name,
+            "description": p.description,
+            "price": p.price,
+            "category": p.category,
+            "thumbnail": p.thumbnail,
+            "product_views": p.product_views,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "is_featured": p.is_featured,
+            'user_id': p.user_id,
+            "user_username": p.user.username,
+        }
+        for p in qs
+    ]
+    
+    return JsonResponse(data, safe=False, status=200)

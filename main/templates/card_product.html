@@ -73,10 +73,10 @@
              class="px-3 py-1 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200 hover:shadow-sm transition">
             Edit
           </a>
-          <a href="{% url 'main:delete_product' product.id %}" 
+          <button onclick="deleteProduct('{{ product.id }}')"
              class="px-3 py-1 bg-red-100 rounded-md text-red-700 hover:bg-red-200 hover:shadow-sm transition">
             Delete
-          </a>
+          </button>
         </div>
       </div>
     {% else %}
@@ -89,3 +89,59 @@
     {% endif %}
   </div>
 </article>
+
+<script>
+function deleteProduct(productId) {
+  if (!confirm('Yakin mau hapus produk ini?')) return;
+
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+  if (!csrfToken) {
+    showToast('Error!', 'CSRF token tidak ditemukan', 'error');
+    return;
+  }
+
+  fetch(`/delete-product-ajax/${productId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.message === 'Produk berhasil dihapus!') {
+      // Remove the card from DOM
+      const card = event.target.closest('article');
+      if (card) {
+        card.remove();
+      }
+      // Use setTimeout to ensure toast.js is loaded
+      setTimeout(() => {
+        if (typeof showToast !== 'undefined') {
+          showToast('Product deleted successfully!', '', 'success');
+        } else {
+          alert('Product deleted successfully!');
+        }
+      }, 100);
+    } else {
+      setTimeout(() => {
+        if (typeof showToast !== 'undefined') {
+          showToast('Gagal!', data.error || 'Gagal menghapus produk', 'error');
+        } else {
+          alert(data.error || 'Gagal menghapus produk');
+        }
+      }, 100);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    setTimeout(() => {
+      if (typeof showToast !== 'undefined') {
+        showToast('Error!', 'Terjadi kesalahan saat menghapus produk', 'error');
+      } else {
+        alert('Terjadi kesalahan saat menghapus produk');
+      }
+    }, 100);
+  });
+}
+</script>

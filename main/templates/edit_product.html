@@ -17,6 +17,9 @@
       </a>
     </div>
     
+    <!-- Notification Area -->
+    <div id="notification" class="hidden mb-4 p-4 rounded-md text-center font-medium"></div>
+
     <!-- Form -->
     <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-sm">
       <div class="mb-8">
@@ -24,58 +27,58 @@
         <p class="text-gray-600">Update your product information 💕</p>
       </div>
       
-      <form method="POST" class="space-y-6">
+      <form method="POST" id="edit-product-form" class="space-y-6">
         {% csrf_token %}
 
         <!-- Nama Produk -->
         <div>
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Nama Produk
           </label>
-          <input type="text" name="name" id="name" value="{{ product.name }}"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="Masukkan nama produk" required>
+          {{ form.name }}
         </div>
 
         <!-- Deskripsi Produk -->
         <div>
-          <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Deskripsi Produk
           </label>
-          <textarea name="content" id="content" rows="5"
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                    placeholder="Tulis deskripsi produkmu..." required>{{ product.content }}</textarea>
+          {{ form.description }}
         </div>
 
         <!-- Thumbnail URL -->
         <div>
-          <label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             URL Gambar Produk
           </label>
-          <input type="url" name="thumbnail" id="thumbnail" value="{{ product.thumbnail }}"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="https://contoh.com/gambar-produk.jpg">
+          {{ form.thumbnail }}
         </div>
 
         <!-- Harga Produk -->
         <div>
-          <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Harga Produk (Rp)
           </label>
-          <input type="number" name="price" id="price" value="{{ product.price }}" min="0" step="1000"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#ba1666] focus:ring-[#ba1666] sm:text-sm"
-                 placeholder="Contoh: 150000" required>
+          {{ form.price }}
         </div>
 
-        <!-- Kategori (jika ada) -->
-        {% if form.category %}
+        <!-- Kategori Produk -->
         <div>
-          <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
             Kategori Produk
           </label>
           {{ form.category }}
         </div>
-        {% endif %}
+
+        <!-- Featured Product -->
+        <div>
+          <div class="flex items-center">
+            {{ form.is_featured }}
+            <label for="{{ form.is_featured.id_for_label }}" class="ml-2 text-sm font-medium text-gray-900">
+              Featured Product
+            </label>
+          </div>
+        </div>
 
         <!-- Tombol -->
         <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
@@ -92,4 +95,49 @@
     </div>
   </div>
 </div>
+
+<script>
+// Show notification function
+function showNotification(message, type = 'success') {
+  const notificationEl = document.getElementById('notification');
+  notificationEl.textContent = message;
+  notificationEl.className = `mb-4 p-4 rounded-md text-center font-medium ${type === 'success' ? 'bg-pink-100 text-pink-800' : 'bg-red-100 text-red-800'}`;
+  notificationEl.classList.remove('hidden');
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notificationEl.classList.add('hidden');
+  }, 3000);
+}
+
+document.getElementById("edit-product-form").addEventListener("submit", async function(e) {
+  e.preventDefault(); // Prevent page reload
+  const form = e.target;
+  const formData = new FormData(form);
+
+  try {
+    const response = await fetch(window.location.href, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value,
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+      showNotification("Produk berhasil diupdate! 🎉", 'success');
+      // Redirect after showing notification
+      setTimeout(() => {
+        window.location.href = "{% url 'main:show_main' %}";
+      }, 1500);
+    } else {
+      showNotification("Terjadi kesalahan saat mengupdate produk 😭", 'error');
+    }
+
+  } catch (error) {
+    console.error("Error:", error);
+    showNotification("Terjadi kesalahan saat mengupdate produk 😭", 'error');
+  }
+});
+</script>
 {% endblock %}
